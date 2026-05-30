@@ -8,13 +8,13 @@ This application was developed to provide an efficient and intuitive solution fo
 
 ## Features
 
-- ⚡ Fast development with Vite
-- 🎨 Responsive and modern UI
-- 🔒 Type-safe development with TypeScript
-- ♻️ Reusable React components
-- 📱 Mobile-friendly design
-- 🚀 Optimized production build
-- 🛠 ESLint configuration for code quality
+- Fast development with Vite
+- Responsive and modern UI
+- Type-safe development with TypeScript
+- Reusable React components
+- Mobile-friendly design
+- Optimized production build
+- ESLint configuration for code quality
 
 ## Tech Stack
 
