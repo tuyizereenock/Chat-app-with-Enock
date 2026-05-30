@@ -78,7 +78,7 @@ The application will be available at:
 http://localhost:5173
 ```
 
-## 📦 Build for Production
+## Build for Production
 
 ```bash
 npm run build
