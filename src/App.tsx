@@ -87,6 +87,16 @@ function initials(name: string) {
     .toUpperCase()
 }
 
+function getAuthStatusMessage(message: string) {
+  const normalized = message.toLowerCase()
+
+  if (normalized.includes('failed to fetch') || normalized.includes('fetch')) {
+    return `Cannot reach Supabase at ${supabaseConfig.url}. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local, then restart the dev server.`
+  }
+
+  return message
+}
+
 function Avatar({
   src,
   name,
@@ -163,7 +173,7 @@ function AuthScreen() {
           })
 
     if (result.error) {
-      setStatus(result.error.message)
+      setStatus(getAuthStatusMessage(result.error.message))
     } else if (mode === 'signup' && !result.data.session) {
       setStatus('Account created. Check your email to confirm your signup.')
     }
@@ -1415,6 +1425,22 @@ function ChatApp({ user }: { user: User }) {
               <button
                 type="button"
                 disabled={!activeConversation}
+                onClick={() =>
+                  recording ? stopVoiceNote() : void startVoiceNote()
+                }
+                aria-label={recording ? 'Stop recording' : 'Record voice note'}
+                title={recording ? 'Stop recording' : 'Record voice note'}
+                className={`grid h-10 w-10 place-items-center rounded-md ${
+                  recording
+                    ? 'bg-rose-500 text-white'
+                    : 'text-slate-400 hover:bg-white dark:hover:bg-slate-800'
+                } disabled:opacity-40`}
+              >
+                {recording ? <Square size={16} /> : <Mic size={18} />}
+              </button>
+              <button
+                type="button"
+                disabled={!activeConversation}
                 onClick={() => fileInputRef.current?.click()}
                 aria-label="Attach file"
                 title="Attach file"
@@ -1508,6 +1534,94 @@ function ChatApp({ user }: { user: User }) {
                 </p>
               )}
             </div>
+          </section>
+        </div>
+      )}
+
+      {groupOpen && (
+        <div className="absolute inset-0 z-30 flex items-start justify-center bg-slate-950/30 px-4 py-16 backdrop-blur-[1px] dark:bg-black/50">
+          <section className="w-full max-w-md rounded-md border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+            <header className="flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-slate-950 dark:text-white">
+                  New group
+                </h2>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Choose people and name the conversation.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setGroupOpen(false)}
+                aria-label="Close group"
+                title="Close group"
+                className="grid h-8 w-8 place-items-center rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X size={17} />
+              </button>
+            </header>
+
+            <label className="mt-4 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Group name
+              <input
+                value={groupName}
+                onChange={(event) => setGroupName(event.target.value)}
+                className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                placeholder="Project team"
+              />
+            </label>
+
+            <div className="mt-4 max-h-72 space-y-2 overflow-y-auto">
+              {profiles.map((item) => {
+                const selected = selectedGroupMemberIds.includes(item.id)
+
+                return (
+                  <button
+                    type="button"
+                    key={item.id}
+                    onClick={() =>
+                      setSelectedGroupMemberIds((ids) =>
+                        selected
+                          ? ids.filter((id) => id !== item.id)
+                          : [...ids, item.id],
+                      )
+                    }
+                    className={`grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-md px-3 py-3 text-left ${
+                      selected
+                        ? 'bg-violet-50 dark:bg-violet-950/40'
+                        : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <Avatar name={item.display_name} src={item.avatar_url} />
+                    <span className="min-w-0 truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      {item.display_name}
+                    </span>
+                    <span
+                      className={`h-4 w-4 rounded border ${
+                        selected
+                          ? 'border-violet-600 bg-violet-600'
+                          : 'border-slate-300 dark:border-slate-600'
+                      }`}
+                    />
+                  </button>
+                )
+              })}
+
+              {!profiles.length && (
+                <p className="rounded-md border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                  No other users found yet.
+                </p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void createGroup()}
+              disabled={busy || !groupName.trim() || !selectedGroupMemberIds.length}
+              className="mt-5 h-10 w-full rounded-md bg-violet-600 text-sm font-bold text-white disabled:opacity-50"
+            >
+              Create group
+            </button>
           </section>
         </div>
       )}
